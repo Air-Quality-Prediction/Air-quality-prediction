@@ -170,6 +170,11 @@ def download_report():
     category = request.args.get("category", "N/A")
     date = request.args.get("date", datetime.now().strftime('%Y-%m-%d'))
     
+    def clean_text(text):
+        if not text:
+            return ""
+        return str(text).encode('latin-1', 'replace').decode('latin-1')
+        
     pdf = FPDF()
     pdf.add_page()
     
@@ -178,18 +183,22 @@ def download_report():
     pdf.ln(10)
     
     pdf.set_font("Arial", size=14)
-    pdf.cell(200, 10, txt=f"Station : {station}", ln=True)
-    pdf.cell(200, 10, txt=f"Date    : {date} NPT", ln=True)
-    pdf.cell(200, 10, txt=f"AQI     : {aqi}", ln=True)
-    pdf.cell(200, 10, txt=f"Category: {category}", ln=True)
-    pdf.cell(200, 10, txt=f"Source  : Department of Environment, Nepal", ln=True)
+    pdf.cell(200, 10, txt=clean_text(f"Station : {station}"), ln=True)
+    pdf.cell(200, 10, txt=clean_text(f"Date    : {date} NPT"), ln=True)
+    pdf.cell(200, 10, txt=clean_text(f"AQI     : {aqi}"), ln=True)
+    pdf.cell(200, 10, txt=clean_text(f"Category: {category}"), ln=True)
+    pdf.cell(200, 10, txt=clean_text(f"Source  : Department of Environment, Nepal"), ln=True)
     
     pdf.ln(15)
     pdf.set_font("Arial", 'I', 10)
-    pdf.multi_cell(0, 10, "This report was generated using the NepaAir prediction and monitoring platform. Methodology based on US EPA standards adopted for Nepal.")
+    pdf.multi_cell(0, 10, clean_text("This report was generated using the NepaAir prediction and monitoring platform. Methodology based on US EPA standards adopted for Nepal."))
     
     filename_date = date.replace(":", "-")
-    filename = f"NepaAir-AQI-Report-{station.replace(' ', '_')}-{filename_date}.pdf"
+    # Clean filename of any invalid characters
+    safe_station = station.replace(' ', '_').encode('ascii', 'ignore').decode('ascii')
+    safe_date = filename_date.encode('ascii', 'ignore').decode('ascii')
+    filename = f"NepaAir-AQI-Report-{safe_station}-{safe_date}.pdf"
+    
     filepath = os.path.join("static", filename)
     pdf.output(filepath)
     
