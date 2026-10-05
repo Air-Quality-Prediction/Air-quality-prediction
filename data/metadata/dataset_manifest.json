@@ -1,0 +1,35 @@
+{
+    "dataset_name": "NepaAir Nepal Air Quality Dataset",
+    "country": "Nepal",
+    "source_count": 1,
+    "sources": [
+        "Department of Environment, Nepal (Mocked Proxy)"
+    ],
+    "download_dates": [
+        "2026-10-01"
+    ],
+    "coverage_start": "2021-10-02 05:28:12.813896+00:00",
+    "coverage_end": "2026-10-01 05:28:12.813896+00:00",
+    "stations": [
+        "Biratnagar City AQMS",
+        "Janakpur Hub AQMS",
+        "Ratnapark AQMS",
+        "Pokhara University AQMS",
+        "Butwal Center AQMS",
+        "Birendranagar AQMS",
+        "Dhangadhi City AQMS"
+    ],
+    "pollutants": [
+        "PM2.5",
+        "PM10",
+        "NO2",
+        "SO2",
+        "O3",
+        "CO"
+    ],
+    "row_count": 12782,
+    "license_notes": [
+        "Generated for academic proxy purposes. Simulates Nepal DoEnv data structure."
+    ],
+    "processing_version": "1.0"
+}

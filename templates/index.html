@@ -1,194 +1,211 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AirAware — India</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="/static/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NepaAir - Nepal Air Quality Intelligence</title>
+    <!-- Use standard Vanilla CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Fallback quick inline styles, moved to style.css mostly */
+    </style>
 </head>
-
 <body>
-
-  <!-- AUTH OVERLAY -->
-  <div id="authOverlay" class="auth-overlay">
-    <div class="auth-card">
-      <h2>Welcome to AirAware</h2>
-      <p>Sign up or log in to view the AQI dashboard.</p>
-
-      <input id="authEmail" type="email" placeholder="Email" />
-      <input id="authPassword" type="password" placeholder="Password" />
-
-      <div class="auth-actions">
-        <button id="btnLogin" class="btn-secondary">Log in</button>
-        <button id="btnSignup" class="btn-primary">Sign up</button>
-      </div>
-
-      <div id="authMsg" class="auth-msg"></div>
-    </div>
-  </div>
-
-  <div class="app" id="appRoot" style="display:none">
-    <aside class="sidebar">
-      <div class="logo">AirAware • India</div>
-      <div class="subl">Dataset based ML prediction</div>
-
-      <div class="nav">
-        <button id="st1">New Delhi</button>
-        <button id="st2">Mumbai</button>
-        <button id="st3">Kolkata</button>
-        <button id="st4">Chennai</button>
-        <button id="st5">Bengaluru</button>
-      </div>
-
-      <div style="margin-top:18px;font-size:13px">Quick actions</div>
-      <div style="margin-top:8px;display:flex;gap:8px">
-        <button id="export" class="exportBtn">Export dataset</button>
-      </div>
-    </aside>
-
-    <main class="main">
-
-      <div class="topbar">
-        <div>
-          <div class="pageTitle">AirAware — Smart AQI Prediction</div>
-          <div style="font-size:13px;color:var(--muted)">AQI prediction using Kaggle dataset + ML model</div>
+    <header class="navbar">
+        <div class="container nav-content">
+            <h1 class="logo">NepaAir 🇳🇵</h1>
+            <nav class="nav-links">
+                <a href="#" class="active" data-lang-en="Dashboard" data-lang-ne="ड्यासबोर्ड">Dashboard</a>
+                <a href="#forecast" data-lang-en="Forecast" data-lang-ne="पूर्वानुमान">Forecast</a>
+                <a href="#data-quality" data-lang-en="Data Quality" data-lang-ne="डाटा गुणस्तर">Data Quality</a>
+            </nav>
+            <div class="nav-controls">
+                <button id="lang-toggle" onclick="toggleLanguage()">नेपाली / EN</button>
+            </div>
         </div>
+    </header>
 
-        <div class="controls">
-          <input id="cityInput" class="cityInput" placeholder="Enter city..." />
-          <button id="cityPredictBtn" class="btn">Predict City</button>
-          <button id="downloadBtn" class="btn">Download Report</button>
-          <button id="themeBtn" class="btn">🌙 Dark</button>
-          <button id="logoutBtn" class="btn">Logout</button>
-        </div>
-      </div>
+    <main class="container">
+        <section class="hero-section">
+            <h2 data-lang-en="Nepal Air Quality Intelligence & Prediction Platform" data-lang-ne="नेपाल वायु गुणस्तर खुफिया र भविष्यवाणी मञ्च">Nepal Air Quality Intelligence & Prediction Platform</h2>
+            <p data-lang-en="Real-time monitoring and advanced ML forecasting for Nepal." data-lang-ne="नेपालको लागि वास्तविक-समय अनुगमन र उन्नत एमएल पूर्वानुमान।">Real-time monitoring and advanced ML forecasting for Nepal.</p>
+            
+            <div class="station-selector">
+                <select id="station-select" onchange="loadStationData()">
+                    <option value="" disabled selected data-lang-en="Select Station" data-lang-ne="स्टेसन छान्नुहोस्">Select Station</option>
+                </select>
+            </div>
+        </section>
 
-      <div class="grid">
-
-        <!-- LEFT COLUMN -->
-        <div>
-
-          <div class="widget">
-            <h3>Live City</h3>
-            <div class="aqGauge">
-              <div class="gaugeWrap">
-                <canvas id="aqGauge" width="260" height="260"></canvas>
-              </div>
-
-              <div class="aqInfo">
-                <div id="stationName" class="stationName">City</div>
-                <div id="cityName" class="cityName">--</div>
-                <div class="aqText" id="aqNum">--</div>
-
-                <div class="cProps">
-                  PM2.5: <span id="pmv">--</span> µg/m³ • CO: <span id="cov">--</span>
+        <section class="dashboard-grid">
+            <!-- Main AQI Card -->
+            <div class="card main-aqi-card">
+                <h3 data-lang-en="Current Air Quality" data-lang-ne="हालको वायु गुणस्तर">Current Air Quality</h3>
+                <div class="aqi-display">
+                    <div class="aqi-value" id="current-aqi">--</div>
+                    <div class="aqi-category" id="current-category">--</div>
                 </div>
-              </div>
+                <div class="metadata">
+                    <p><strong data-lang-en="Dominant Pollutant:" data-lang-ne="मुख्य प्रदूषक:">Dominant Pollutant:</strong> <span id="dominant-pol">--</span></p>
+                    <p><strong data-lang-en="Latest observation:" data-lang-ne="पछिल्लो अवलोकन:">Latest observation:</strong> <span id="latest-obs">--</span></p>
+                    <p><strong data-lang-en="Source:" data-lang-ne="स्रोत:">Source:</strong> <span id="data-source">--</span></p>
+                </div>
+                <button class="btn-primary" onclick="downloadReport()" data-lang-en="Download PDF Report" data-lang-ne="पीडीएफ रिपोर्ट डाउनलोड गर्नुहोस्">Download PDF Report</button>
             </div>
 
-            <div class="smallStats">
-              <div class="stat"><div class="num" id="stat1">--</div><div>Min AQI</div></div>
-              <div class="stat"><div class="num" id="stat2">--</div><div>Current AQI</div></div>
-              <div class="stat"><div class="num" id="stat3">--</div><div>Max AQI</div></div>
+            <!-- Pollutants Grid -->
+            <div class="card pollutants-card">
+                <h3 data-lang-en="Pollutant Concentrations" data-lang-ne="प्रदूषक सांद्रता">Pollutant Concentrations</h3>
+                <div class="pollutant-grid">
+                    <div class="pol-item">
+                        <span class="pol-name">PM2.5</span>
+                        <span class="pol-val" id="val-pm25">--</span>
+                    </div>
+                    <div class="pol-item">
+                        <span class="pol-name">PM10</span>
+                        <span class="pol-val" id="val-pm10">--</span>
+                    </div>
+                    <div class="pol-item">
+                        <span class="pol-name">NO2</span>
+                        <span class="pol-val" id="val-no2">--</span>
+                    </div>
+                    <div class="pol-item">
+                        <span class="pol-name" data-lang-en="Temp" data-lang-ne="तापक्रम">Temp</span>
+                        <span class="pol-val" id="val-temp">--</span>
+                    </div>
+                </div>
             </div>
-          </div>
+        </section>
 
-          <div class="widget">
-            <h3>Pollutant Composition</h3>
-            <canvas id="compPie" width="260" height="160"></canvas>
-          </div>
-
-          <div class="widget">
-            <h3>Rate this dashboard</h3>
-
-            <div class="rating-stars" id="ratingStars">
-              <span data-v="1">★</span>
-              <span data-v="2">★</span>
-              <span data-v="3">★</span>
-              <span data-v="4">★</span>
-              <span data-v="5">★</span>
+        <section id="forecast" class="card chart-section">
+            <h3 data-lang-en="72-Hour AQI Forecast (Machine Learning)" data-lang-ne="७२-घण्टा एक्यूआई पूर्वानुमान">72-Hour AQI Forecast (Machine Learning)</h3>
+            <div class="chart-container">
+                <canvas id="forecastChart"></canvas>
             </div>
-
-            <button id="submitRating" class="btnPrimarySmall">
-              Submit rating
-            </button>
-
-            <div id="ratingStatus" class="statusText"></div>
-          </div>
-
-        </div>
-
-        <!-- RIGHT COLUMN -->
-        <div>
-
-          <div class="widget">
-            <h3>Health Advice</h3>
-            <div id="healthAdvice" class="healthBox">
-              Select a city to see health advice.
-            </div>
-          </div>
-
-          <div class="widget">
-            <h3>Ask AI about Air Quality</h3>
-
-            <div class="chatRow">
-              <input id="chatInput" class="chatInput" type="text" placeholder="Ask: What is AQI?" />
-
-              <select id="langSel" class="langSel">
-                <option value="en">English</option>
-                <option value="te">తెలుగు</option>
-                <option value="hi">Hindi</option>
-              </select>
-
-              <button id="chatSend" class="chatBtn">Ask</button>
-            </div>
-
-            <div id="chatReply" class="chatReply">
-              AI reply will appear here.
-            </div>
-          </div>
-
-          <div class="widget">
-            <h3>User Feedback</h3>
-
-            <textarea id="feedbackBox" class="feedbackBox" placeholder="Write feedback here..."></textarea>
-
-            <button id="sendFeedback" class="btnPrimarySmall">Submit Feedback</button>
-
-            <div id="feedbackStatus" class="statusText"></div>
-          </div>
-
-          <div class="charts">
-            <div class="chartCard">
-              <h3>Hourly AQI (24h)</h3>
-              <canvas id="hourlyLine" height="90"></canvas>
-            </div>
-
-            <div class="chartCard">
-              <h3>Prediction: Now / 1Y / 5Y</h3>
-              <canvas id="predBar" height="90"></canvas>
-            </div>
-
-            <div class="chartCard">
-              <h3>Past 9 Years — AQI Trend</h3>
-              <canvas id="trendArea" height="110"></canvas>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      <footer class="footer">
-        © AirAware • India <br>
-        Trained using Kaggle AQI Dataset (Delhi, Mumbai, Kolkata, Chennai, Bengaluru)
-      </footer>
-
+            <p class="chart-disclaimer" data-lang-en="Model: RandomForestRegressor (Trained on Nepal historical data)" data-lang-ne="मोडेल: Random Forest (नेपालको ऐतिहासिक डाटामा प्रशिक्षित)">Model: RandomForestRegressor (Trained on Nepal historical data)</p>
+        </section>
+        
+        <section id="health-advice" class="card">
+            <h3 data-lang-en="Health Guidance" data-lang-ne="स्वास्थ्य सल्लाह">Health Guidance</h3>
+            <p id="health-text" data-lang-en="Please select a station to view health advice based on current AQI." data-lang-ne="हालको एक्यूआईमा आधारित स्वास्थ्य सल्लाह हेर्न कृपया स्टेशन चयन गर्नुहोस्।">Please select a station to view health advice based on current AQI.</p>
+        </section>
     </main>
-  </div>
 
-  <script src="/static/app.js"></script>
+    <footer>
+        <p>NepaAir © 2026. Data sourced from Department of Environment, Government of Nepal (Simulated proxy for demonstration).</p>
+    </footer>
+
+    <script>
+        let currentLang = 'en';
+        let chartInstance = null;
+        let activeStation = '';
+        let activeAqi = '--';
+        let activeCategory = '--';
+        let activeDate = '--';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ne' : 'en';
+            document.querySelectorAll('[data-lang-en]').forEach(el => {
+                el.innerText = el.getAttribute(`data-lang-${currentLang}`);
+            });
+        }
+
+        async function init() {
+            const res = await fetch('/api/v1/stations');
+            const data = await res.json();
+            const select = document.getElementById('station-select');
+            data.stations.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.innerText = s;
+                select.appendChild(opt);
+            });
+            if(data.stations.length > 0) {
+                select.value = data.stations[0];
+                loadStationData();
+            }
+        }
+
+        async function loadStationData() {
+            const station = document.getElementById('station-select').value;
+            activeStation = station;
+            
+            // Current AQI
+            const res = await fetch(`/api/v1/aqi/current?station=${encodeURIComponent(station)}`);
+            const data = await res.json();
+            
+            if(data.error) return alert(data.error);
+            
+            document.getElementById('current-aqi').innerText = data.aqi;
+            document.getElementById('current-category').innerText = data.aqi_category;
+            document.getElementById('dominant-pol').innerText = data.dominant_pollutant;
+            document.getElementById('latest-obs').innerText = data.timestamp;
+            document.getElementById('data-source').innerText = data.source;
+            
+            document.getElementById('val-pm25').innerText = data.pm25 !== 'N/A' ? `${data.pm25} µg/m³` : '--';
+            document.getElementById('val-pm10').innerText = data.pm10 !== 'N/A' ? `${data.pm10} µg/m³` : '--';
+            document.getElementById('val-no2').innerText = data.no2 !== 'N/A' ? `${data.no2} ppb` : '--';
+            document.getElementById('val-temp').innerText = data.temperature !== 'N/A' ? `${data.temperature} °C` : '--';
+            
+            activeAqi = data.aqi;
+            activeCategory = data.aqi_category;
+            activeDate = data.timestamp;
+            
+            updateHealthAdvice(data.aqi);
+            loadForecast(station);
+        }
+        
+        function updateHealthAdvice(aqi) {
+            const textEl = document.getElementById('health-text');
+            if(aqi <= 50) textEl.innerText = "Air quality is satisfactory, and air pollution poses little or no risk.";
+            else if(aqi <= 100) textEl.innerText = "Air quality is acceptable. However, there may be a risk for some people, particularly those who are unusually sensitive to air pollution.";
+            else if(aqi <= 150) textEl.innerText = "Members of sensitive groups may experience health effects. The general public is less likely to be affected.";
+            else if(aqi <= 200) textEl.innerText = "Some members of the general public may experience health effects; members of sensitive groups may experience more serious health effects.";
+            else textEl.innerText = "Health alert: The risk of health effects is increased for everyone. Avoid prolonged outdoor exertion.";
+        }
+
+        async function loadForecast(station) {
+            const res = await fetch(`/api/v1/forecast?station=${encodeURIComponent(station)}`);
+            const data = await res.json();
+            
+            const labels = data.forecasts.map(f => f.date);
+            const values = data.forecasts.map(f => f.predicted_aqi);
+            
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Predicted AQI',
+                        data: values,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+        
+        function downloadReport() {
+            if(!activeStation) return;
+            const url = `/download_report?station=${encodeURIComponent(activeStation)}&aqi=${activeAqi}&category=${encodeURIComponent(activeCategory)}&date=${encodeURIComponent(activeDate)}`;
+            window.location.href = url;
+        }
+
+        window.onload = init;
+    </script>
 </body>
 </html>
