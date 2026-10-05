@@ -165,6 +165,7 @@ def data_quality():
 
 @app.route("/download_report")
 def download_report():
+    import io
     station = request.args.get("station", "Kathmandu")
     aqi = request.args.get("aqi", "N/A")
     category = request.args.get("category", "N/A")
@@ -194,15 +195,18 @@ def download_report():
     pdf.multi_cell(0, 10, clean_text("This report was generated using the NepaAir prediction and monitoring platform. Methodology based on US EPA standards adopted for Nepal."))
     
     filename_date = date.replace(":", "-")
-    # Clean filename of any invalid characters
     safe_station = station.replace(' ', '_').encode('ascii', 'ignore').decode('ascii')
     safe_date = filename_date.encode('ascii', 'ignore').decode('ascii')
     filename = f"NepaAir-AQI-Report-{safe_station}-{safe_date}.pdf"
     
-    filepath = os.path.join("static", filename)
-    pdf.output(filepath)
-    
-    return send_file(filepath, as_attachment=True)
+    # Use memory buffer instead of writing to disk to prevent any filesystem permission errors
+    pdf_bytes = pdf.output(dest='S').encode('latin1')
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=filename
+    )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5050, debug=True)
